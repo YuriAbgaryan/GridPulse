@@ -15,7 +15,8 @@ import {
   ExternalLink,
   ChevronRight,
   Flame,
-  BatteryCharging
+  BatteryCharging,
+  MapPin
 } from 'lucide-react';
 
 interface IncidentsAlertsPageProps {
@@ -23,6 +24,7 @@ interface IncidentsAlertsPageProps {
   onUpdateAlertStatus: (alertId: string, newStatus: 'active' | 'in_progress' | 'resolved') => void;
   onOpenWorkOrderModal: (alert: GridAlert) => void;
   selectedAlertId?: string | null;
+  onNavigateToMap?: () => void;
 }
 
 export const IncidentsAlertsPage: React.FC<IncidentsAlertsPageProps> = ({
@@ -30,6 +32,7 @@ export const IncidentsAlertsPage: React.FC<IncidentsAlertsPageProps> = ({
   onUpdateAlertStatus,
   onOpenWorkOrderModal,
   selectedAlertId,
+  onNavigateToMap,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
@@ -99,6 +102,15 @@ export const IncidentsAlertsPage: React.FC<IncidentsAlertsPageProps> = ({
             >
               Transformer Maintenance Plan (9,400 Units)
             </button>
+            {onNavigateToMap && (
+              <button
+                onClick={onNavigateToMap}
+                className="px-3 py-1.5 rounded-md transition-all cursor-pointer text-slate-400 hover:text-white flex items-center gap-1.5"
+              >
+                <MapPin className="w-3.5 h-3.5 text-blue-400" />
+                <span>Live Grid Map</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -302,6 +314,35 @@ export const IncidentsAlertsPage: React.FC<IncidentsAlertsPageProps> = ({
                 })
               )}
             </div>
+
+            {/* LIVE GRID SECTION DIRECTLY AFTER INCIDENTS */}
+            {onNavigateToMap && (
+              <div className="mt-8 p-5 bg-gradient-to-r from-blue-950/40 via-[#131d2e] to-[#0f172a] border border-blue-500/30 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+                <div className="flex items-start gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <span>Live Grid Geospatial Radar & Incident Heat Blobs</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono font-semibold">
+                        {criticalCount} Critical Outage Risks
+                      </span>
+                    </h3>
+                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                      Visualize all alerts on the authentic vector map of Armenia: red/yellow pulsing alert blobs, 220/110 kV bulk transmission lines, and 10/0.4 kV residential transformer plants with pinpoint theft bypasses.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={onNavigateToMap}
+                  className="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                >
+                  <span>Open Live Grid Map</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </>
         ) : (
           /* AUTOMATED MAINTENANCE SCHEDULER VIEW FOR ENA 9,400 TRANSFORMERS */

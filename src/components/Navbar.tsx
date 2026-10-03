@@ -44,8 +44,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </div>
 
-        {/* Zone 2: 4 clean text navigation links */}
-        <nav className="flex items-center gap-1 sm:gap-2 md:gap-6 text-xs sm:text-sm font-medium text-slate-400">
+        {/* Zone 2: 5 clean text navigation links */}
+        <nav className="flex items-center gap-1 sm:gap-2 md:gap-5 text-xs sm:text-sm font-medium text-slate-400">
           <button
             onClick={() => onTabChange('monitor')}
             className={`px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ${
@@ -80,6 +80,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {unreadAlertCount}
               </span>
             )}
+          </button>
+          <button
+            onClick={() => onTabChange('map')}
+            className={`px-2.5 py-1.5 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+              currentTab === 'map'
+                ? 'text-white bg-slate-800/70 font-semibold'
+                : 'hover:text-slate-200 hover:bg-slate-800/30'
+            }`}
+          >
+            Live Grid Map
           </button>
           <button
             onClick={() => onTabChange('loss_analytics')}

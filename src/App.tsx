@@ -11,6 +11,7 @@ import { LiveMonitoringPage } from './components/LiveMonitoringPage';
 import { ForecastPage } from './components/ForecastPage';
 import { IncidentsAlertsPage } from './components/IncidentsAlertsPage';
 import { EnaLossAnalyticsPage } from './components/EnaLossAnalyticsPage';
+import { LiveGridMapPage } from './components/LiveGridMapPage';
 import { MaintenanceWorkOrderModal } from './components/MaintenanceWorkOrderModal';
 
 export default function App() {
@@ -139,6 +140,16 @@ export default function App() {
             onUpdateAlertStatus={handleUpdateAlertStatus}
             onOpenWorkOrderModal={handleOpenWorkOrderModal}
             selectedAlertId={selectedAlertId}
+            onNavigateToMap={() => setCurrentTab('map')}
+          />
+        )}
+
+        {currentTab === 'map' && (
+          <LiveGridMapPage
+            substations={substations}
+            alerts={alerts}
+            onOpenWorkOrderModal={handleOpenWorkOrderModal}
+            onNavigateToForecast={() => setCurrentTab('forecast')}
           />
         )}
 

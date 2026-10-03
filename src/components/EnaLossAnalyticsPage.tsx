@@ -12,13 +12,22 @@ import {
   Zap,
   Building,
   Target,
-  FileSpreadsheet
+  FileSpreadsheet,
+  MapPin,
+  AlertCircle,
+  ArrowRight,
+  Navigation,
+  HardHat,
+  Truck,
+  Check
 } from 'lucide-react';
 
 export const EnaLossAnalyticsPage: React.FC = () => {
   const [lossReductionGoalPct, setLossReductionGoalPct] = useState<number>(1.0);
   const [meterUnitCostUSD, setMeterUnitCostUSD] = useState<number>(220);
   const [targetMetersCount, setTargetMetersCount] = useState<number>(350);
+  const [selectedFeederId, setSelectedFeederId] = useState<string>('TR-Shirak-048');
+  const [dispatchedFeeders, setDispatchedFeeders] = useState<Record<string, boolean>>({});
 
   // Financial calculations from user brief:
   // Total baseline losses: 621.9 million kWh / year (~$31M USD)
@@ -32,6 +41,13 @@ export const EnaLossAnalyticsPage: React.FC = () => {
   const totalDeploymentCostUSD = targetMetersCount * meterUnitCostUSD;
   const paybackPeriodMonths = ((totalDeploymentCostUSD / annualUsdSaved) * 12).toFixed(1);
   const paybackPeriodDays = Math.round((totalDeploymentCostUSD / annualUsdSaved) * 365);
+
+  const selectedFeeder = ENA_LOSS_FEEDERS.find(f => f.transformerId === selectedFeederId) || ENA_LOSS_FEEDERS[0];
+  const missingKwh = selectedFeeder.scadaFeederReadingKWh - selectedFeeder.smartMetersSumKWh;
+
+  const handleDispatchInspection = (transformerId: string) => {
+    setDispatchedFeeders(prev => ({ ...prev, [transformerId]: true }));
+  };
 
   return (
     <div className="min-h-screen bg-[#0d121c] text-slate-100 pb-16">
@@ -106,6 +122,143 @@ export const EnaLossAnalyticsPage: React.FC = () => {
             </div>
             <div className="mt-1 text-xs text-slate-400 font-mono">
               Targeted metering only ($150-$300)
+            </div>
+          </div>
+        </div>
+
+        {/* VISUAL THEFT & POWER LOSS PINPOINT RADAR (SIMPLE & HIGHLY VISIBLE) */}
+        <div className="mt-8 bg-[#121927] border-2 border-rose-500/40 rounded-2xl p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                </span>
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-rose-400">
+                  Visible Theft & Loss Pinpoint Radar
+                </span>
+                <span className="text-slate-600">·</span>
+                <span className="text-xs text-slate-400 font-mono">SCADA vs Smart Meter Differential</span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold text-white mt-1">
+                Pinpointed Leak Topology: Where Electricity Disappears
+              </h2>
+            </div>
+
+            {/* Selectable Suspect Feeder Tabs */}
+            <div className="flex flex-wrap items-center gap-1.5 self-start md:self-auto">
+              <span className="text-xs text-slate-400 font-medium mr-1">Suspect Node:</span>
+              {ENA_LOSS_FEEDERS.slice(0, 4).map(f => (
+                <button
+                  key={f.transformerId}
+                  onClick={() => setSelectedFeederId(f.transformerId)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer ${
+                    selectedFeederId === f.transformerId
+                      ? 'bg-rose-500 text-white shadow-md'
+                      : 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  {f.transformerId.replace('TR-', '')} (-{f.unaccountedLossPct.toFixed(0)}%)
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 3-STAGE POWER FLOW VISUAL DIAGRAM */}
+          <div className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+            {/* Box 1: SCADA Inflow (4 cols) */}
+            <div className="lg:col-span-4 bg-slate-900/90 border border-sky-500/40 rounded-xl p-4 sm:p-5 relative shadow-lg">
+              <div className="flex items-center justify-between text-xs text-sky-400 font-mono">
+                <span>1. SCADA Feeder Inflow</span>
+                <span className="px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 text-[10px] font-bold">100% Injected</span>
+              </div>
+              <div className="mt-2 text-2xl font-bold font-mono text-white tabular-nums">
+                {selectedFeeder.scadaFeederReadingKWh.toLocaleString()} <span className="text-sm text-slate-400 font-normal">kWh</span>
+              </div>
+              <div className="text-xs text-slate-400 mt-1 font-mono">
+                Feeder: <strong className="text-slate-200">{selectedFeeder.location}</strong>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-slate-800 text-[11px] text-slate-500 font-mono">
+                Measured at 10 kV Substation Terminal CT
+              </div>
+            </div>
+
+            {/* Box 2: Pinpointed Theft Gap (4 cols - Highlighted Center Leak) */}
+            <div className="lg:col-span-4 bg-rose-950/40 border-2 border-rose-500 rounded-xl p-4 sm:p-5 relative shadow-2xl">
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-rose-300 font-bold flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-rose-400 animate-bounce" />
+                  <span>2. Pinpointed Leak Point</span>
+                </span>
+                <span className="px-2 py-0.5 rounded bg-rose-500 text-white text-[10px] font-bold uppercase animate-pulse">
+                  -{selectedFeeder.unaccountedLossPct.toFixed(1)}% Gap
+                </span>
+              </div>
+
+              <div className="mt-2 text-2xl font-bold font-mono text-rose-400 tabular-nums">
+                -{missingKwh.toLocaleString()} <span className="text-sm text-rose-300/80 font-normal">kWh Missing</span>
+              </div>
+
+              <div className="text-xs text-slate-200 mt-1 font-mono font-semibold">
+                Est. Lost Value: <span className="text-rose-300 font-bold">${selectedFeeder.estimatedAnnualLossUSD.toLocaleString()} / year</span>
+              </div>
+
+              {/* Exact Pinpoint Details */}
+              <div className="mt-3 p-3 bg-black/60 border border-rose-500/40 rounded-lg text-xs space-y-1">
+                <div className="text-[10px] uppercase font-mono text-rose-400 font-bold flex items-center gap-1">
+                  <Navigation className="w-3 h-3 text-rose-400" />
+                  <span>Pinpointed Pole Coordinates</span>
+                </div>
+                <div className="text-white font-mono font-bold text-xs">
+                  {selectedFeeder.pinpointLocation}
+                </div>
+                <p className="text-[11px] text-rose-200/90 leading-tight">
+                  {selectedFeeder.suspectedCauseDetails}
+                </p>
+                {selectedFeeder.coordinates && (
+                  <div className="text-[10px] text-slate-400 font-mono pt-0.5">
+                    GPS: {selectedFeeder.coordinates.lat.toFixed(4)}° N, {selectedFeeder.coordinates.lng.toFixed(4)}° E
+                  </div>
+                )}
+              </div>
+
+              {/* Inspection Crew Trigger */}
+              <div className="mt-3">
+                {dispatchedFeeders[selectedFeeder.transformerId] ? (
+                  <div className="w-full py-2 rounded-lg bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-mono font-bold flex items-center justify-center gap-1.5">
+                    <Check className="w-4 h-4" />
+                    <span>Crew Dispatched to Pole Coordinates</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleDispatchInspection(selectedFeeder.transformerId)}
+                    className="w-full py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <Truck className="w-3.5 h-3.5" />
+                    <span>Dispatch Inspection Crew with RF Detector</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Box 3: Smart Meters Output (4 cols) */}
+            <div className="lg:col-span-4 bg-slate-900/90 border border-emerald-500/40 rounded-xl p-4 sm:p-5 relative shadow-lg">
+              <div className="flex items-center justify-between text-xs text-emerald-400 font-mono">
+                <span>3. Smart Meters Aggregate</span>
+                <span className="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 text-[10px] font-bold">
+                  {(100 - selectedFeeder.unaccountedLossPct).toFixed(1)}% Accounted
+                </span>
+              </div>
+              <div className="mt-2 text-2xl font-bold font-mono text-emerald-400 tabular-nums">
+                {selectedFeeder.smartMetersSumKWh.toLocaleString()} <span className="text-sm text-slate-400 font-normal">kWh</span>
+              </div>
+              <div className="text-xs text-slate-400 mt-1 font-mono">
+                Billed Accounts: <strong className="text-slate-200">{selectedFeeder.customerSmartMeters} Smart Meters</strong>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-slate-800 text-[11px] text-slate-500 font-mono">
+                Automated 15-minute interval smart telemetry
+              </div>
             </div>
           </div>
         </div>
@@ -264,9 +417,21 @@ export const EnaLossAnalyticsPage: React.FC = () => {
               <tbody className="divide-y divide-slate-800/60 font-mono">
                 {ENA_LOSS_FEEDERS.map(feeder => {
                   const isUrgent = feeder.investigationPriority === 'urgent';
+                  const isSelected = selectedFeederId === feeder.transformerId;
+                  const isDispatched = dispatchedFeeders[feeder.transformerId];
+
                   return (
-                    <tr key={feeder.transformerId} className="hover:bg-slate-800/30">
-                      <td className="py-3 pr-4 font-bold text-white">{feeder.transformerId}</td>
+                    <tr
+                      key={feeder.transformerId}
+                      onClick={() => setSelectedFeederId(feeder.transformerId)}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected ? 'bg-slate-800/80 ring-1 ring-rose-500/50' : 'hover:bg-slate-800/30'
+                      }`}
+                    >
+                      <td className="py-3 pr-4 font-bold text-white flex items-center gap-1.5">
+                        <MapPin className={`w-3.5 h-3.5 ${isUrgent ? 'text-rose-400' : 'text-amber-400'}`} />
+                        <span>{feeder.transformerId}</span>
+                      </td>
                       <td className="py-3 pr-4 text-slate-300 font-sans">{feeder.location}</td>
                       <td className="py-3 pr-4 text-slate-400">{feeder.customerSmartMeters} meters</td>
                       <td className="py-3 pr-4 text-slate-200">{feeder.scadaFeederReadingKWh.toLocaleString()} kWh</td>
@@ -283,13 +448,19 @@ export const EnaLossAnalyticsPage: React.FC = () => {
                         {feeder.status.replace('_', ' ')}
                       </td>
                       <td className="py-3 text-right">
-                        <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
-                          isUrgent
-                            ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                            : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                        }`}>
-                          {feeder.investigationPriority} Crew
-                        </span>
+                        {isDispatched ? (
+                          <span className="text-emerald-400 font-mono text-[10px] font-bold">
+                            ✓ Dispatched
+                          </span>
+                        ) : (
+                          <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
+                            isUrgent
+                              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                              : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          }`}>
+                            {feeder.investigationPriority} Crew
+                          </span>
+                        )}
                       </td>
                     </tr>
                   );

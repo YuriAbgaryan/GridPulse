@@ -1,5 +1,5 @@
 export type ViewMode = 'operator' | 'ena';
-export type PageTab = 'monitor' | 'forecast' | 'alerts' | 'loss_analytics';
+export type PageTab = 'monitor' | 'forecast' | 'alerts' | 'map' | 'loss_analytics';
 
 export interface Substation {
   id: string;
@@ -14,6 +14,7 @@ export interface Substation {
   status: 'nominal' | 'warning' | 'critical';
   type: 'generation' | 'transmission' | 'distribution' | 'pv_cluster';
   details: string;
+  mapCoords?: { x: number; y: number };
 }
 
 export interface GenerationSource {
@@ -92,4 +93,7 @@ export interface LossAnomalyFeeder {
   estimatedAnnualLossUSD: number;
   status: 'suspected_theft' | 'technical_overload' | 'unmetered_tap' | 'nominal';
   investigationPriority: 'urgent' | 'medium' | 'low';
+  pinpointLocation?: string;
+  suspectedCauseDetails?: string;
+  coordinates?: { lat: number; lng: number };
 }

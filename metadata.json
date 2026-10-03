@@ -2,5 +2,7 @@
   "name": "ArmGrid AI - Smart Grid & PV Dispatch SaaS",
   "description": "Predictive grid voltage, solar output forecasting, load balancing, and loss anomaly detection platform for Armenia's Electric Power System Operator and ENA.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
