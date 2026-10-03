@@ -20,7 +20,9 @@ import {
   Check,
   X,
   XCircle,
-  RotateCcw
+  RotateCcw,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 interface LiveMonitoringPageProps {
@@ -50,6 +52,7 @@ export const LiveMonitoringPage: React.FC<LiveMonitoringPageProps> = ({
   const [filterRegion, setFilterRegion] = useState<string>('all');
   const [simulatedRampActive, setSimulatedRampActive] = useState<boolean>(false);
   const [topAlertStatus, setTopAlertStatus] = useState<'pending' | 'accepted' | 'rejected'>('pending');
+  const [showAlert, setShowAlert] = useState<boolean>(false);
 
   // Totals calculation
   const totalGenMW = generationSources.reduce((acc, s) => acc + s.currentOutputMW, 0);
@@ -90,42 +93,83 @@ export const LiveMonitoringPage: React.FC<LiveMonitoringPageProps> = ({
             </h1>
           </div>
 
-          {/* Mode Switcher */}
-          <div className="flex items-center gap-2 self-start md:self-auto">
-            <span className="text-xs text-slate-400 font-medium">Perspective:</span>
-            <div className="flex items-center p-0.5 bg-slate-900 border border-slate-800 rounded-lg text-xs font-medium">
-              <button
-                onClick={() => onViewModeChange('operator')}
-                className={`px-3 py-1.5 rounded-md transition-all cursor-pointer ${
-                  viewMode === 'operator'
-                    ? 'bg-blue-600 text-white shadow-sm font-semibold'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Operator (SCADA/TSO)
-              </button>
-              <button
-                onClick={() => onViewModeChange('ena')}
-                className={`px-3 py-1.5 rounded-md transition-all cursor-pointer ${
-                  viewMode === 'ena'
-                    ? 'bg-emerald-600 text-white shadow-sm font-semibold'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                ENA (Distribution/DSO)
-              </button>
+          {/* Header Controls: Show/Hide Alert & Perspective Switcher */}
+          <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+            {/* ALERT SHOW/HIDE BUTTON */}
+            <button
+              onClick={() => setShowAlert(prev => !prev)}
+              className={`px-3.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95 ${
+                showAlert
+                  ? 'bg-slate-800/90 border-slate-700 text-slate-200 hover:bg-slate-700'
+                  : 'bg-amber-500/15 border-amber-500/40 text-amber-300 hover:bg-amber-500/25 hover:border-amber-500/60'
+              }`}
+            >
+              {showAlert ? (
+                <>
+                  <EyeOff className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Hide Grid Alert</span>
+                </>
+              ) : (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                  </span>
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Show Grid Alert</span>
+                  <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-[10px] font-mono font-bold text-amber-300 border border-amber-500/30">
+                    1 Pending
+                  </span>
+                </>
+              )}
+            </button>
+
+            {/* Mode Switcher */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400 font-medium hidden sm:inline">Perspective:</span>
+              <div className="flex items-center p-0.5 bg-slate-900 border border-slate-800 rounded-lg text-xs font-medium">
+                <button
+                  onClick={() => onViewModeChange('operator')}
+                  className={`px-3 py-1.5 rounded-md transition-all cursor-pointer ${
+                    viewMode === 'operator'
+                      ? 'bg-blue-600 text-white shadow-sm font-semibold'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Operator (SCADA/TSO)
+                </button>
+                <button
+                  onClick={() => onViewModeChange('ena')}
+                  className={`px-3 py-1.5 rounded-md transition-all cursor-pointer ${
+                    viewMode === 'ena'
+                      ? 'bg-emerald-600 text-white shadow-sm font-semibold'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  ENA (Distribution/DSO)
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* TOP LIVE ALERT ABOUT GRID CHANGE WITH INFO, ADJUSTMENT SUGGESTION, AND ACCEPT/REJECT BUTTONS */}
-        <div className={`mt-6 rounded-2xl border transition-all duration-300 p-5 shadow-2xl ${
-          topAlertStatus === 'accepted'
-            ? 'bg-[#0e231c] border-emerald-500/50 text-emerald-100'
-            : topAlertStatus === 'rejected'
-            ? 'bg-[#241317] border-rose-500/40 text-rose-100'
-            : 'bg-gradient-to-r from-[#28180c] via-[#201815] to-[#161a25] border-amber-500/60 text-amber-100'
-        }`}>
+        {/* TOP LIVE ALERT ABOUT GRID CHANGE (CONDITIONALLY VISIBLE) */}
+        {showAlert && (
+          <div className={`mt-6 rounded-2xl border transition-all duration-300 p-5 shadow-2xl relative ${
+            topAlertStatus === 'accepted'
+              ? 'bg-[#0e231c] border-emerald-500/50 text-emerald-100'
+              : topAlertStatus === 'rejected'
+              ? 'bg-[#241317] border-rose-500/40 text-rose-100'
+              : 'bg-gradient-to-r from-[#28180c] via-[#201815] to-[#161a25] border-amber-500/60 text-amber-100'
+          }`}>
+            {/* Quick Hide 'X' button inside card */}
+            <button
+              onClick={() => setShowAlert(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg bg-black/20 hover:bg-black/50 text-slate-400 hover:text-white transition-all cursor-pointer"
+              title="Hide Alert"
+            >
+              <X className="w-4 h-4" />
+            </button>
           {topAlertStatus === 'pending' ? (
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
               <div className="space-y-2 flex-1">
@@ -253,6 +297,7 @@ export const LiveMonitoringPage: React.FC<LiveMonitoringPageProps> = ({
             </div>
           )}
         </div>
+      )}
 
         {/* TOP LEVEL REAL-TIME TELEMETRY HUD */}
         <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
