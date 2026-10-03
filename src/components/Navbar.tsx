@@ -38,9 +38,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="text-lg font-bold tracking-tight text-white group-hover:text-blue-400 transition-colors">
               GridPulse
             </span>
-            <span className="text-xs text-slate-400 ml-1.5 hidden sm:inline-block font-mono">
-              SaaS
-            </span>
           </button>
         </div>
 
